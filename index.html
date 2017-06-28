@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset=utf-8>
+	<title>Face Tracking Demo</title>
+	<style>
+		body { font-family:Verdana,Arial; }
+		a { text-decoration:none; color:#666; }
+		h1 { font-size:20px; padding:0; }
+		header p { font-size:12px; }
+		.playr_controls { margin-top:-11px; }
+		video { width:640px; height:480px; }
+		small { color:#aaa; font-size:11px; display:block; }
+		.highlight { color:#4169e1; font-weight:bold; text-transform:uppercase; background-color:#fff; padding:0 2px; }
+		footer { font-size:11px; color:#aaa; }
+		canvas { position: absolute;
+			top: 148px;color: #FFF;
+  		text-align: center;
+  		font-size: 20px;
+  		background-color: rgba(221, 221, 0, 0.03);
+  		 width:640px; height:360px; 
+  		z-index: 2147483647;
+		}
+	</style>
+	<script type='text/javascript'>//<![CDATA[
+		window.onload=function() {
+  			var overlay= document.getElementById('overlay');
+  			var video= document.getElementById('v');
+  			var overlay = document.getElementById('overlay');
+  			video.addEventListener('progress', function() {
+    			var show= video.currentTime>=5 && video.currentTime<10;
+    			overlay.style.visibility= show? 'visible' : 'visible';
+  			}, false);
+  			var textTracks = video.textTracks; 
+			var textTrack = textTracks[0];
+			//textTrack.mode = 1; 
+			textTrack.oncuechange = function() {
+				var cue = this.activeCues[0]; // assuming there is only one active cue
+				var text = cue.text;
+				if (overlay.getContext) {
+    				var ctx = overlay.getContext('2d');
+    				ctx.clearRect(0, 0, overlay.width, overlay.height);
+    				var kx = overlay.width;
+    				var ky = overlay.height;
+    				console.log("kx:" + kx + ", ky:"+ ky);
+					if (text != "") {
+						var faces = JSON.parse(cue.text);
+						var len = faces.length;
+						for (var i = 0; i < len; i++) {
+							var r = faces[i].r;
+							var score = faces[i].s;
+							if (score > 80) {
+    							ctx.strokeStyle="#00FF00";
+							} else if (score > 60) {
+    							ctx.strokeStyle="#FFFF00";
+							} else {
+    							ctx.strokeStyle="#FF0000";
+							}
+							ctx.strokeRect(r[0]*kx, r[1]*ky, r[2]*kx, r[3]*ky);
+							//console.log(video);
+						} 
+					}
+				}
+			}; 			
+		}//]]>
+</script>
+</head>
+<body>
+	<header>
+		<h1>Face Tracking Demo</h1>
+	</header>
+	<p>This video uses the following <a href="1_1498690729288.mp4.stats.vtt">WebVTT file</a>.</p>
+	<video id="v" class="playr_video" controls preload="metadata">
+		<source src='1_1498690729288.mp4' type='video/mp4'>
+		<track label="Face info stats" kind="metadata" srclang="en" src="1_1498690729288.mp4.stats.vtt" default>
+		<track label="Face info subtitles" kind="subtitles" srclang="en" src="1_1498690729288.mp4.vtt">
+	</video>
+	<div>
+		<canvas id="overlay"></canvas>
+	</div>
+</body>
+</html>
